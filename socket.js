@@ -17,11 +17,14 @@ module.exports = (server, app, sessionMiddleware) => {
       console.log('room 네임스페이스 접속 해제');
     });
   });
+
   chat.on('connection', (socket) => {
     console.log('chat 네임스페이스 접속');
-
     socket.on('join', (data) => {
       socket.join(data); // 방에 참가
+      const currentRoom = socket.adapter.rooms.get(data);
+      const userCount = currentRoom ? currentRoom.size : 0;
+      room.emit('updateUserCount', { roomId: data, userCount });
       // 같은 방에 있는 소켓들에게 메시지 전송
       socket.to(data).emit('join', {
         user: 'system',
@@ -44,6 +47,7 @@ module.exports = (server, app, sessionMiddleware) => {
           user: 'system',
           chat: `${socket.request.session.color} 님이 퇴장하셨습니다..`,
         });
+        room.emit('updateUserCount', { roomId, userCount });
       }
     });
   });

@@ -5,7 +5,16 @@ const { removeRoom: removeRoomService } = require('../services/index');
 exports.renderMain = async (req, res, next) => {
   try {
     const rooms = await Room.find({});
-    res.render('main', { rooms, title: 'GIF 채팅방' });
+    const roomsSocket = req.app.get('io').of('/chat').adapter.rooms;
+    const roomsSocketData = rooms.map((room) => {
+      const roomId = room._id.toString();
+      const connect = roomsSocket.get(roomId)?.size || 1;
+      return {
+        ...room.toObject(),
+        connect,
+      };
+    });
+    res.render('main', { rooms: roomsSocketData, title: 'GIF 채팅방' });
   } catch (err) {
     next(err);
   }
