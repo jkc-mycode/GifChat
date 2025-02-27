@@ -5,6 +5,7 @@
 <a href="/" id="exit-btn">방 나가기</a>
 <fieldset>
     <legend>채팅 내용</legend>
+    <p id="current-count">현재 인원: {{number}}</p>
     <div id="chat-list">
         {% for chat in chats %}
         {% if chat.user === user %}
@@ -86,6 +87,10 @@
         div.style.color = data.user;
         document.querySelector('#chat-list').appendChild(div);
     });
+
+    socket.on('updateCount', function (data) {
+        document.getElementById('current-count').textContent = '현재 인원: ' + data;
+    })
 
     document.querySelector('#chat-form').addEventListener('submit', function (e) {
         e.preventDefault();

@@ -62,18 +62,21 @@ exports.enterRoom = async (req, res, next) => {
 
     const io = req.app.get('io');
     const { rooms } = io.of('/chat').adapter; // chat 네임스페이스에 연결된 방의 목록을 가져옴
+    const currentUser = rooms.get(req.params.id)?.size + 1 || 1;
     // 방의 ID를 통해서 방에 연결된 소켓 목록을 가져옴
-    if (room.max <= rooms.get(req.params.id)?.size) {
+    if (room.max <= currentUser) {
       return res.redirect('/?error=허용 인원이 초과하였습니다.');
     }
 
     const chats = await Chat.find({ room: room._id }).sort('createdAt');
-
+    // 현재 인원 수 업데이트
+    io.of('/chat').to(req.params.id).emit('updateCount', currentUser);
     res.render('chat', {
       title: 'GIF 채팅방 생성',
       room,
       chats,
       user: req.session.color,
+      number: currentUser,
     });
   } catch (err) {
     next(err);

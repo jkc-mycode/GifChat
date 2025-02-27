@@ -11,6 +11,7 @@ module.exports = (server, app, sessionMiddleware) => {
     middleware(socket.request, {}, next);
   chat.use(wrap(sessionMiddleware)); // chat 네임스페이스에 미들웨어 적용
 
+  // room 네임스페이스에 이벤트 리스너를 붙임
   room.on('connection', (socket) => {
     console.log('room 네임스페이스 접속');
     socket.on('disconnect', () => {
@@ -18,6 +19,7 @@ module.exports = (server, app, sessionMiddleware) => {
     });
   });
 
+  // chat 네임스페이스에 이벤트 리스너를 붙임
   chat.on('connection', (socket) => {
     console.log('chat 네임스페이스 접속');
     socket.on('join', (data) => {
@@ -26,12 +28,14 @@ module.exports = (server, app, sessionMiddleware) => {
       const userCount = currentRoom ? currentRoom.size : 0;
       room.emit('updateUserCount', { roomId: data, userCount });
       // 같은 방에 있는 소켓들에게 메시지 전송
+      // (chat.html에 있는 socket.on('join') 이벤트 리스너가 실행됨)
       socket.to(data).emit('join', {
         user: 'system',
         chat: `${socket.request.session.color} 님이 입장하셨습니다.`,
       });
     });
 
+    // 채팅방 나갈 때의 이벤트 리스너
     socket.on('disconnect', async () => {
       console.log('chat 네임스페이스 접속 해제');
       const { referer } = socket.request.headers;
@@ -47,6 +51,7 @@ module.exports = (server, app, sessionMiddleware) => {
           user: 'system',
           chat: `${socket.request.session.color} 님이 퇴장하셨습니다..`,
         });
+        socket.to(roomId).emit('updateCount', userCount);
         room.emit('updateUserCount', { roomId, userCount });
       }
     });
