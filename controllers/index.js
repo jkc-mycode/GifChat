@@ -4,11 +4,13 @@ const { removeRoom: removeRoomService } = require('../services/index');
 
 exports.renderMain = async (req, res, next) => {
   try {
-    const rooms = await Room.find({});
-    const roomsSocket = req.app.get('io').of('/chat').adapter.rooms;
-    const roomsSocketData = rooms.map((room) => {
+    const io = req.app.get('io');
+    const { rooms } = io.of('/chat').adapter; // chat 네임스페이스에 연결된 방의 목록을 가져옴
+
+    const rooms_list = await Room.find({});
+    const roomsSocketData = rooms_list.map((room) => {
       const roomId = room._id.toString();
-      const connect = roomsSocket.get(roomId)?.size || 1;
+      const connect = rooms.get(roomId)?.size || 1;
       return {
         ...room.toObject(),
         connect,
@@ -69,8 +71,7 @@ exports.enterRoom = async (req, res, next) => {
     }
 
     const chats = await Chat.find({ room: room._id }).sort('createdAt');
-    
-    io.of('/chat').to(req.params.id).emit('updateCount', currentUser);
+    io.of('/chat').to(req.params.id).emit('updateCount', { currentUser });
     res.render('chat', {
       title: 'GIF 채팅방 생성',
       room,

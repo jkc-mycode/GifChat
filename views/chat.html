@@ -5,7 +5,7 @@
 <a href="/" id="exit-btn">방 나가기</a>
 <fieldset>
     <legend>채팅 내용</legend>
-    <p id="current-count">현재 인원: {{number}}</p>
+    <p id="current-count">현재 인원: {{number}} 명</p>
     <div id="chat-list">
         {% for chat in chats %}
         {% if chat.user === user %}
@@ -90,7 +90,7 @@
     });
 
     socket.on('updateCount', function (data) {
-        document.getElementById('current-count').textContent = '현재 인원: ' + data;
+        document.getElementById('current-count').textContent = '현재 인원: ' + data.userCount + '명';
     })
 
     document.querySelector('#chat-form').addEventListener('submit', function (e) {

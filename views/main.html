@@ -80,6 +80,7 @@
 
     socket.on('updateUserCount', function (data) {
         document.querySelectorAll('tbody tr').forEach(function (tr) {
+            console.log("$$$$$$$$$$$$$");
             if (tr.dataset.id === data.roomId) {
                 tr.querySelector('td:nth-child(4)').textContent = data.userCount; // 현재 인원 수 업데이트
             }
