@@ -33,6 +33,8 @@ module.exports = (server, app, sessionMiddleware) => {
         user: 'system',
         chat: `${socket.request.session.color} 님이 입장하셨습니다.`,
       });
+      // 현재 인원 수 업데이트
+      socket.to(data).emit('updateCount', userCount);
     });
 
     // 채팅방 나갈 때의 이벤트 리스너
@@ -42,6 +44,8 @@ module.exports = (server, app, sessionMiddleware) => {
       const roomId = new URL(referer).pathname.split('/').at(-1);
       const currentRoom = socket.adapter.rooms.get(roomId);
       const userCount = currentRoom ? currentRoom.size : 0;
+      room.emit('updateUserCount', { roomId, userCount });
+
       if (userCount === 0) {
         await removeRoom(roomId);
         room.emit('removeRoom', roomId);
@@ -52,7 +56,6 @@ module.exports = (server, app, sessionMiddleware) => {
           chat: `${socket.request.session.color} 님이 퇴장하셨습니다..`,
         });
         socket.to(roomId).emit('updateCount', userCount);
-        room.emit('updateUserCount', { roomId, userCount });
       }
     });
   });

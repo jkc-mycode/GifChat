@@ -69,7 +69,7 @@ exports.enterRoom = async (req, res, next) => {
     }
 
     const chats = await Chat.find({ room: room._id }).sort('createdAt');
-    // 현재 인원 수 업데이트
+    
     io.of('/chat').to(req.params.id).emit('updateCount', currentUser);
     res.render('chat', {
       title: 'GIF 채팅방 생성',
